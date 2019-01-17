@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/amoretspero/periodic-data-loader/issues"
   },
-  "homepage": "https://github.com/amoretspero/periodic-data-loader#readme"
+  "homepage": "https://github.com/amoretspero/periodic-data-loader#readme",
+  "devDependencies": {
+    "@types/node": "^10.12.18"
+  }
 }

@@ -4,7 +4,8 @@
   "description": "Data loader with periodic call to load function.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p src"
   },
   "repository": {
     "type": "git",

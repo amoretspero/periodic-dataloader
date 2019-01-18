@@ -1,7 +1,7 @@
 /**
  * Type for load function of periodic data loader.
  */
-type LoadFunction<TKey, TValue> = (keys: TKey[]) => Promise<Array<TValue | Error>>;
+export type LoadFunction<TKey, TValue> = (keys: TKey[]) => Promise<Array<TValue | Error>>;
 
 /**
  * Interface for pending key, internally used by periodic data loader.
@@ -22,6 +22,8 @@ interface IPendingKey<TKey, TValue> {
      */
     reject: (reason?: any) => void;
 }
+
+export type CacheMap<TKey, TValue> = Map<TKey, TValue>;
 
 /**
  * Periodic Dataloader class.
@@ -52,6 +54,18 @@ export class PeriodicDataLoader<TKey, TValue> {
     private lastExecutionTime: number;
 
     /**
+     * Whether caching should be used.
+     */
+    private cache: boolean;
+
+    /**
+     * Cache map to use for caching.
+     *
+     * Cache map should be provided when `cache` is set to `true`.
+     */
+    private cacheMap: CacheMap<TKey, TValue> | undefined;
+
+    /**
      * Creates `PeriodicDataLoader` instance with given interval and batch load function.
      *
      * Constraints:
@@ -61,10 +75,23 @@ export class PeriodicDataLoader<TKey, TValue> {
      * @param batchInterval Interval of single period to execute `loadFn`.
      * @param loadFn Batch load function.
      */
-    constructor(batchInterval: number, loadFn: LoadFunction<TKey, TValue>) {
+    constructor(
+        batchInterval: number,
+        loadFn: LoadFunction<TKey, TValue>,
+        cache?: boolean,
+        cacheMap?: CacheMap<TKey, TValue>,
+    ) {
         this.batchInterval = batchInterval;
         this.loadFn = loadFn;
         this.lastExecutionTime = Date.now();
+        this.cache = cache || false;
+        this.cacheMap = cacheMap;
+
+        if (this.cache === true) {
+            if (this.cacheMap === undefined) {
+                throw new Error(`Caching is set to true, but no cache map provided.`);
+            }
+        }
     }
 
     /**
@@ -73,6 +100,11 @@ export class PeriodicDataLoader<TKey, TValue> {
      */
     public async loadSingle(key: TKey) {
         return new Promise<TValue>((resolve, reject) => {
+            if (this.cache) {
+                if (this.cacheMap!.has(key)) {
+                    resolve(this.cacheMap!.get(key));
+                }
+            }
             this.addToPendingKeys(key, resolve, reject);
         });
     }
@@ -86,7 +118,36 @@ export class PeriodicDataLoader<TKey, TValue> {
     }
 
     /**
-     * Add provided key, with resolve and reject to list of pending keys.
+     * Clears cached value for given key.
+     * @param key Key to clear cached value.
+     */
+    public clearCache(key: TKey) {
+        if (this.cache) {
+            this.cacheMap!.delete(key);
+        }
+    }
+
+    /**
+     * Clears cached values for given keys.
+     * @param keys Keys to clear cached value.
+     */
+    public clearCacheMultiple(keys: TKey[]) {
+        if (this.cache) {
+            keys.forEach((key) => this.cacheMap!.delete(key));
+        }
+    }
+
+    /**
+     * Clears cache map when caching is used.
+     */
+    public clearCacheAll() {
+        if (this.cache) {
+            this.cacheMap!.clear();
+        }
+    }
+
+    /**
+     * Adds provided key, with resolve and reject to list of pending keys.
      * @param key User provided key to add.
      * @param resolve Resolve of promise corresponding to provided key.
      * @param reject Reject of promise corresponding to provided key.
@@ -131,6 +192,11 @@ export class PeriodicDataLoader<TKey, TValue> {
             if (value instanceof Error) {
                 targetPendingKey.reject(value);
             } else {
+                if (this.cache) {
+                    if (!this.cacheMap!.has(targetPendingKey.key)) {
+                        this.cacheMap!.set(targetPendingKey.key, value);
+                    }
+                }
                 targetPendingKey.resolve(value);
             }
         }

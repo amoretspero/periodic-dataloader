@@ -12,7 +12,11 @@ By above strategy, periodic data loader can guarantee for every key passed to it
   
 ### Unique keys only to batch load function.  
   
-For efficiency, periodic data loader will execute on **unique** pending keys when internally calling provided batch load function. If a same key has been provided multiple times, this should result in same key with different promises to resolve or reject. To resolve or reject them with single data, periodic data loader will calculate unique pending keys and execute batch load function with only those keys, and after that it will iterate through each key to resolve or reject all promises that corresponds to that key.
+For efficiency, periodic data loader will execute on **unique** pending keys when internally calling provided batch load function. If a same key has been provided multiple times, this should result in same key with different promises to resolve or reject. To resolve or reject them with single data, periodic data loader will calculate unique pending keys and execute batch load function with only those keys, and after that it will iterate through each key to resolve or reject all promises that corresponds to that key.  
+  
+### Caching  
+  
+Periodic data loader provides caching ability to efficiently loading data that does not change often. User must specify cache map, instance of javascript `Map<K, V>` when caching is used.
   
 ## Usage  
   

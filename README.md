@@ -16,7 +16,9 @@ For efficiency, periodic data loader will execute on **unique** pending keys whe
   
 ### Caching  
   
-Periodic data loader provides caching ability to efficiently loading data that does not change often. User must specify cache map, instance of javascript `Map<K, V>` when caching is used.
+Periodic data loader provides caching ability to efficiently loading data that does not change often. User must specify cache map, instance of javascript `Map<K, V>` when caching is used.  
+  
+---  
   
 ## Usage  
   
@@ -39,7 +41,7 @@ Periodic data loader also needs a period to execute provided batch load function
 ```typescript
 import { PeriodicDataLoader } from "periodic-data-loader";
 
-const pdl = new PeriodicDataLoader(100, (keys) => periodicLoadFunction(keys));
+const pdl = new PeriodicDataLoader(interval, periodicLoadFunction);
 ```  
 Just provided period of execution and batch load function to execute.  
   
@@ -54,7 +56,7 @@ For single data load, use as follows.
 ```typescript
 const singleData = await pdl.load(123);
 ```  
-This 1 line of code will load single data with key `123`.  
+This will load single data with key `123`.  
   
 #### Loading data - multiple  
   
@@ -63,4 +65,58 @@ For multiple data loade, use as follows.
 ```typescript
 const multipleData = await pdl.load([456, 789]);
 ```  
-This 1 line of code will load multiple data for keys `456` and `789`. `multipleData[0]` will contain data for key `456` and `multipleData[1]` will contain data for key `789`.
+This will load multiple data for keys `456` and `789`. `multipleData[0]` will contain data for key `456` and `multipleData[1]` will contain data for key `789`.  
+  
+### Caching  
+  
+Periodic data loader supports caching successfully resolved values. Those values will be cached at provided `CacheMap<TKey, TValue>` instance, which is javascript `Map<TKey, TValue>` instance. When caching is set to `true`, all values will be cached when successfully resolved. If a value or values corresponding to a key or keys should be cleared or there is a need to clear entire cache, use `clearCache(key: TKey)`, `clearCacheMultiple(keys: TKey[])` or `clearCacheAll()` method.  
+  
+#### Periodic data loader with cache enabled  
+  
+```typescript
+const cacheMap = new Map<TKey, TValue>();
+
+const pdl = new PeriodicDataLoader(interval, periodicLoadFunction, true, cacheMap);
+```  
+Setting `cache` parameter to `true` and providing appropriately typed cache map will enable caching.  
+  
+#### Clearing single cache key.  
+  
+```typescript
+pdl.clearCache(1);
+```  
+This will clear cached value corresponding to key `1`.  
+  
+#### Clearing multiple cache keys.  
+  
+```typescript
+pdl.clearCacheMultiple([1, 2, 3]);
+```  
+This will clear cached values corresponding to keys `1`, `2` and `3`.  
+  
+#### Clearing entire cache.  
+  
+```typescript
+pdl.clearCacheAll();
+```  
+This will clear the entire cache.  
+  
+---  
+  
+## Testing  
+  
+Periodic data loader uses below testing tools.  
+- Testing framework: [Mocha](https://mochajs.org)
+- BDD assertion library: [Chai](https://www.chaijs.com/), [Chai as Promised](https://www.chaijs.com/plugins/chai-as-promised/)
+- Code coverage tool: [Istanbul](https://istanbul.js.org)  
+  
+To test source codes
+1. clone this repository - `git clone https://github.com/amoretspero/periodic-data-loader`
+2. install packages - `npm i`  
+3. run test command - `npm run test`  
+  
+---  
+  
+## License  
+  
+See [LICENSE.md](https://github.com/amoretspero/periodic-data-loader/blob/master/LICENSE.md)

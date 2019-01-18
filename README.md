@@ -1,5 +1,6 @@
 # Periodic Data Loader  
   
+[![Build Status](https://travis-ci.com/amoretspero/periodic-data-loader.svg?branch=master)](https://travis-ci.com/amoretspero/periodic-data-loader)
 [![Coverage Status](https://coveralls.io/repos/amoretspero/periodic-data-loader/badge.svg?branch=master)](https://coveralls.io/r/amoretspero/periodic-data-loader?branch=master)
   
 ## Brief Description  

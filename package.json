@@ -4,8 +4,8 @@
   "description": "Data loader with periodic call to load function.",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha -r tests/tshook.js --reporter spec tests/*.ts",
-    "coveralls": "./node_modules/.bin/coveralls",
+    "test": "nyc mocha --reporter=spec -r tests/tshook.js tests/*.ts",
+    "coveralls": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls",
     "build": "tsc -p src"
   },
   "repository": {

@@ -103,6 +103,7 @@ export class PeriodicDataLoader<TKey, TValue> {
             if (this.cache) {
                 if (this.cacheMap!.has(key)) {
                     resolve(this.cacheMap!.get(key));
+                    return;
                 }
             }
             this.addToPendingKeys(key, resolve, reject);
@@ -183,7 +184,9 @@ export class PeriodicDataLoader<TKey, TValue> {
         const values = await this.loadFn(targetKeys);
 
         if (targetKeys.length !== values.length) {
-            throw new Error(`Number of values load function returned does not match that of keys provided.`);
+            targetPendingKeys.forEach((tpk) => {
+                tpk.reject(new Error(`Number of values load function returned does not match that of keys provided.`));
+            });
         }
 
         for (let tpkidx = 0; tpkidx < targetPendingKeys.length; tpkidx++) {
@@ -193,9 +196,7 @@ export class PeriodicDataLoader<TKey, TValue> {
                 targetPendingKey.reject(value);
             } else {
                 if (this.cache) {
-                    if (!this.cacheMap!.has(targetPendingKey.key)) {
-                        this.cacheMap!.set(targetPendingKey.key, value);
-                    }
+                    this.cacheMap!.set(targetPendingKey.key, value);
                 }
                 targetPendingKey.resolve(value);
             }

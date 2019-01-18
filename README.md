@@ -1,5 +1,7 @@
 # Periodic Data Loader  
   
+[![Coverage Status](https://coveralls.io/repos/amoretspero/periodic-data-loader/badge.svg?branch=master)](https://coveralls.io/r/amoretspero/periodic-data-loader?branch=master)
+  
 ## Brief Description  
   
 **Periodic Data Loader** provides seperating data loading layer from layer that fetches data from backend service and layer which uses fetched data. As anyone can guess from the name, data loading will be done periodically, batching requests within single period. This can be useful when there are too many async/awaits or then callbacks, making it difficult to batching requests within single javascript event loop.  

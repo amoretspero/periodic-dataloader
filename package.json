@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha -r tests/tshook.js --reporter spec tests/*.ts",
+    "coveralls": "./node_modules/.bin/coveralls",
     "build": "tsc -p src"
   },
   "repository": {
@@ -24,6 +25,7 @@
     "@types/node": "^10.12.18",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "coveralls": "^3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
     "ts-node": "^7.0.1",

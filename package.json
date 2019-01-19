@@ -2,7 +2,12 @@
   "name": "periodic-data-loader",
   "version": "0.1.0",
   "description": "Data loader with periodic call to load function.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "dataloader",
+    "typescript"
+  ],
   "scripts": {
     "test": "nyc mocha --reporter=spec -r tests/tshook.js tests/*.ts",
     "coveralls": "nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls",

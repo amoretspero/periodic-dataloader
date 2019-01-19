@@ -1,0 +1,31 @@
+# nyc
+.nyc_output
+coverage
+
+# sources
+src
+
+# tests
+tests
+
+# coveralls
+.coveralls.yml
+
+# gitignore
+.gitignore
+
+# npmignore
+.npmignore
+
+# travis ci
+.travis.yml
+
+# log files
+logs
+*.log
+
+# tslint
+tsling.json
+
+# package-lock.json
+package-lock.json

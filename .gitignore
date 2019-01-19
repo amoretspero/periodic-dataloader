@@ -71,3 +71,6 @@ logs/*
 
 # vscode
 .vscode/*
+
+# Coveralls
+.coveralls.yml

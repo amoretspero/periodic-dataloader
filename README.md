@@ -1,7 +1,7 @@
 # Periodic Data Loader  
   
-[![Build Status](https://travis-ci.com/amoretspero/periodic-data-loader.svg?branch=master)](https://travis-ci.com/amoretspero/periodic-data-loader)
-[![Coverage Status](https://coveralls.io/repos/amoretspero/periodic-data-loader/badge.svg?branch=master)](https://coveralls.io/r/amoretspero/periodic-data-loader?branch=master)
+[![Build Status](https://travis-ci.com/amoretspero/periodic-dataloader.svg?branch=master)](https://travis-ci.com/amoretspero/periodic-dataloader)
+[![Coverage Status](https://coveralls.io/repos/amoretspero/periodic-dataloader/badge.svg?branch=master)](https://coveralls.io/r/amoretspero/periodic-dataloader?branch=master)
   
 ## Brief Description  
   
@@ -42,7 +42,7 @@ Periodic data loader also needs a period to execute provided batch load function
 ### Creating `PeriodicDataLoader` instance  
   
 ```typescript
-import { PeriodicDataLoader } from "periodic-data-loader";
+import { PeriodicDataLoader } from "periodic-dataloader";
 
 const pdl = new PeriodicDataLoader(interval, periodicLoadFunction);
 ```  
@@ -114,7 +114,7 @@ Periodic data loader uses below testing tools.
 - Code coverage tool: [Istanbul](https://istanbul.js.org)  
   
 To test source codes
-1. clone this repository - `git clone https://github.com/amoretspero/periodic-data-loader`
+1. clone this repository - `git clone https://github.com/amoretspero/periodic-dataloader`
 2. install packages - `npm i`  
 3. run test command - `npm run test`  
   
@@ -122,4 +122,4 @@ To test source codes
   
 ## License  
   
-See [LICENSE.md](https://github.com/amoretspero/periodic-data-loader/blob/master/LICENSE.md)
+See [LICENSE.md](https://github.com/amoretspero/periodic-dataloader/blob/master/LICENSE.md)

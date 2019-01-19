@@ -1,5 +1,5 @@
 {
-  "name": "periodic-data-loader",
+  "name": "periodic-dataloader",
   "version": "0.1.0",
   "description": "Data loader with periodic call to load function.",
   "main": "dist/index.js",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amoretspero/periodic-data-loader.git"
+    "url": "git+https://github.com/amoretspero/periodic-dataloader.git"
   },
   "author": "Jiung Hahm",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/amoretspero/periodic-data-loader/issues"
+    "url": "https://github.com/amoretspero/periodic-dataloader/issues"
   },
-  "homepage": "https://github.com/amoretspero/periodic-data-loader#readme",
+  "homepage": "https://github.com/amoretspero/periodic-dataloader#readme",
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",

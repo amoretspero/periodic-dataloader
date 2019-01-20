@@ -26,6 +26,38 @@ interface IPendingKey<TKey, TValue> {
 export type CacheMap<TKey, TValue> = Map<TKey, TValue>;
 
 /**
+ * Option interface for periodic data loader.
+ */
+export interface IPeriodicDataLoaderOption<TKey, TValue> {
+    /**
+     * Interval of single period to execute batch load function.
+     */
+    batchInterval: number;
+
+    /**
+     * Load function to execute.
+     */
+    loadFn: LoadFunction<TKey, TValue>;
+
+    /**
+     * Whether caching should be used.
+     */
+    cache?: boolean;
+
+    /**
+     * Cache map to use for caching.
+     * 
+     * Cache map should be provided when `cache` is set to `true`.
+     */
+    cacheMap?: CacheMap<TKey, TValue>;
+
+    /**
+     * Whether to pass unique keys only to `loadFn`.
+     */
+    unique?: boolean;
+}
+
+/**
  * Periodic Dataloader class.
  *
  * This dataloader executes batch load function PERIODICALLY, with period given in construction time.
@@ -66,6 +98,11 @@ export class PeriodicDataLoader<TKey, TValue> {
     private cacheMap: CacheMap<TKey, TValue> | undefined;
 
     /**
+     * Whether to pass unique keys only to `loadFn`.
+     */
+    private unique: boolean;
+
+    /**
      * Creates `PeriodicDataLoader` instance with given interval and batch load function.
      *
      * Constraints:
@@ -74,18 +111,17 @@ export class PeriodicDataLoader<TKey, TValue> {
      *  3. Each result of batch load function should be in same order with each key provided.
      * @param batchInterval Interval of single period to execute `loadFn`.
      * @param loadFn Batch load function.
+     * @param cache Whether to use caching or not. When set to `true`, must provide `cacheMap`.
+     * @param cacheMap Cache map to use for caching.
+     * @param unique Whether to pass unique keys only to `loadFn` or not.
      */
-    constructor(
-        batchInterval: number,
-        loadFn: LoadFunction<TKey, TValue>,
-        cache?: boolean,
-        cacheMap?: CacheMap<TKey, TValue>,
-    ) {
-        this.batchInterval = batchInterval;
-        this.loadFn = loadFn;
+    constructor(opts: IPeriodicDataLoaderOption<TKey, TValue>) {
+        this.batchInterval = opts.batchInterval;
+        this.loadFn = opts.loadFn;
         this.lastExecutionTime = Date.now();
-        this.cache = cache || false;
-        this.cacheMap = cacheMap;
+        this.cache = opts.cache || false;
+        this.cacheMap = opts.cacheMap;
+        this.unique = opts.unique || false;
 
         if (this.cache === true) {
             if (this.cacheMap === undefined) {
@@ -167,8 +203,54 @@ export class PeriodicDataLoader<TKey, TValue> {
             const timeAfterLastExecution = timestamp - this.lastExecutionTime;
             const targetDelay = Math.max(this.batchInterval - timeAfterLastExecution, 0);
             setTimeout(async () => {
-                await this.execute();
+                if (this.unique) {
+                    await this.executeUnique();
+                } else {
+                    await this.execute();
+                }
             }, targetDelay);
+        }
+    }
+
+    /**
+     * Executes batch load function with keys from currently unique pending keys,
+     * resolving or rejecting promise corresponding to each key.
+     */
+    private async executeUnique() {
+        const targetPendingKeys = this.pendingKeys.splice(0);
+        this.lastExecutionTime = Date.now();
+
+        const mergedTargetPendingKeys = new Map<TKey, { key: TKey, resolves: Array<(value?: TValue | PromiseLike<TValue>) => void>, rejects: Array<(reason?: any) => void> }>();
+        for (const targetPendingKey of targetPendingKeys) {
+            if (mergedTargetPendingKeys.has(targetPendingKey.key)) {
+                mergedTargetPendingKeys.get(targetPendingKey.key)!.resolves.push(targetPendingKey.resolve);
+                mergedTargetPendingKeys.get(targetPendingKey.key)!.rejects.push(targetPendingKey.reject);
+            } else {
+                mergedTargetPendingKeys.set(targetPendingKey.key, { key: targetPendingKey.key, resolves: [targetPendingKey.resolve], rejects: [targetPendingKey.reject] });
+            }
+        }
+
+        const targetKeys = Array.from(mergedTargetPendingKeys.keys());
+        const values = await this.loadFn(targetKeys);
+
+        if (targetKeys.length !== values.length) {
+            Array.from(mergedTargetPendingKeys.values()).forEach((mtpk) => {
+                mtpk.rejects.forEach((reject) => reject(new Error(`Number of values load function returned does not match that of keys provided.`)));
+            });
+        }
+
+        for (let tkidx = 0; tkidx < targetKeys.length; tkidx++) {
+            const targetKey = targetKeys[tkidx];
+            const mergedTargetPendingKey = mergedTargetPendingKeys.get(targetKey)!;
+            const value = values[tkidx];
+            if (value instanceof Error) {
+                mergedTargetPendingKey.rejects.forEach((reject) => reject(value));
+            } else {
+                if (this.cache) {
+                    this.cacheMap!.set(targetKey, value);
+                }
+                mergedTargetPendingKey.resolves.forEach((resolve) => resolve(value));
+            }
         }
     }
 

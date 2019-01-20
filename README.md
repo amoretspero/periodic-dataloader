@@ -15,7 +15,7 @@ By above strategy, periodic data loader can guarantee for every key passed to it
   
 ### Unique keys only to batch load function.  
   
-For efficiency, periodic data loader will execute on **unique** pending keys when internally calling provided batch load function. If a same key has been provided multiple times, this should result in same key with different promises to resolve or reject. To resolve or reject them with single data, periodic data loader will calculate unique pending keys and execute batch load function with only those keys, and after that it will iterate through each key to resolve or reject all promises that corresponds to that key.  
+For efficiency, periodic data loader provides executing batch load function on **unique** pending keys when internally calling provided batch load function. If a same key has been provided multiple times, this should result in same key with different promises to resolve or reject. To resolve or reject them with single data, periodic data loader will calculate unique pending keys and execute batch load function with only those keys, and after that it will iterate through each key to resolve or reject all promises that corresponds to that key.  
   
 ### Caching  
   
@@ -35,6 +35,44 @@ Periodic data loader needs a batch load function to execute periodically, which 
 type LoadFunction<TKey, TValue> = (keys: TKey[]) => Promise<Array<TValue | Error>>;
 ```  
   
+### Options  
+  
+Periodic data loader takes option object at construction time. Structure is like below.  
+  
+```typescript
+/**
+ * Option interface for periodic data loader.
+ */
+export interface IPeriodicDataLoaderOption<TKey, TValue> {
+    /**
+     * Interval of single period to execute batch load function.
+     */
+    batchInterval: number;
+
+    /**
+     * Load function to execute.
+     */
+    loadFn: LoadFunction<TKey, TValue>;
+
+    /**
+     * Whether caching should be used.
+     */
+    cache?: boolean;
+
+    /**
+     * Cache map to use for caching.
+     * 
+     * Cache map should be provided when `cache` is set to `true`.
+     */
+    cacheMap?: CacheMap<TKey, TValue>;
+
+    /**
+     * Whether to pass unique keys only to `loadFn`.
+     */
+    unique?: boolean;
+}
+```
+  
 ### Period  
   
 Periodic data loader also needs a period to execute provided batch load function. Unit is milliseconds, and value should be non-negative.
@@ -44,7 +82,11 @@ Periodic data loader also needs a period to execute provided batch load function
 ```typescript
 import { PeriodicDataLoader } from "periodic-dataloader";
 
-const pdl = new PeriodicDataLoader(interval, periodicLoadFunction);
+const pdlOpts = { 
+    batchInterval,
+    loadFn,
+};
+const pdl = new PeriodicDataLoader(pdlOpts);
 ```  
 Just provided period of execution and batch load function to execute.  
   
@@ -79,7 +121,12 @@ Periodic data loader supports caching successfully resolved values. Those values
 ```typescript
 const cacheMap = new Map<TKey, TValue>();
 
-const pdl = new PeriodicDataLoader(interval, periodicLoadFunction, true, cacheMap);
+const pdl = new PeriodicDataLoader({
+    batchInterval,
+    loadFn,
+    cache: true,
+    cacheMap,
+});
 ```  
 Setting `cache` parameter to `true` and providing appropriately typed cache map will enable caching.  
   
@@ -103,6 +150,20 @@ This will clear cached values corresponding to keys `1`, `2` and `3`.
 pdl.clearCacheAll();
 ```  
 This will clear the entire cache.  
+  
+### Unique  
+  
+By enabling `unique` in `IPeriodicDataLoaderOption`, loader instance will send only unique pending keys to batch load function.
+  
+```typescript
+const cacheMap = new Map<TKey, TValue>();
+
+const pdl = new PeriodicDataLoader({
+    batchInterval,
+    loadFn,
+    unique: true,
+});
+```  
   
 ---  
   

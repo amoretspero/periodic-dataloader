@@ -46,7 +46,7 @@ describe("Caching", () => {
             batchInterval: 100,
             loadFn: (keys: number[]) => Promise.resolve(keys),
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
         pdl.should.be.instanceOf(PeriodicDataLoader);
     });
@@ -68,7 +68,7 @@ describe("Caching", () => {
                 return Promise.resolve(keys);
             },
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
 
         const result1 = await pdl.loadSingle(1);
@@ -89,7 +89,7 @@ describe("Caching", () => {
                 return Promise.resolve(keys);
             },
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
 
         const result1 = await pdl.loadMultiple([100, 101, 102]);
@@ -110,7 +110,7 @@ describe("Caching", () => {
                 return Promise.resolve(keys);
             },
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
 
         const result1 = await pdl.loadSingle(1);
@@ -138,7 +138,7 @@ describe("Caching", () => {
                 return Promise.resolve(keys);
             },
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
 
         const result1 = await pdl.loadMultiple([1, 2]);
@@ -163,7 +163,7 @@ describe("Caching", () => {
                 return Promise.resolve(keys);
             },
             cache: true,
-            cacheMap: new Map<number, number>()
+            cacheMap: new Map<number, number>(),
         });
 
         const result1 = await pdl.loadSingle(1);
@@ -192,7 +192,7 @@ describe("Unique keys only to batch load function", () => {
         const pdl = new PeriodicDataLoader({
             batchInterval: 100,
             loadFn: (keys: number[]) => Promise.resolve(keys),
-            unique: true
+            unique: true,
         });
         pdl.should.be.instanceOf(PeriodicDataLoader);
     });
@@ -231,7 +231,7 @@ describe("Unique keys only to batch load function", () => {
         const result = await Promise.all([
             pdl.loadSingle(1),
             pdl.loadSingle(2),
-            pdl.loadSingle(1)
+            pdl.loadSingle(1),
         ]);
         result.should.deep.equals([1, 2, 1]);
         loadRequestedKeys.should.deep.equals([[1, 2]]);
@@ -248,17 +248,17 @@ describe("Unique keys only to batch load function", () => {
             unique: true,
         });
 
-        const result1 = await pdl.loadMultiple([1, 2, 3])
-            .then((values) => pdl.loadMultiple([2, 3, 4]))
+        pdl.loadMultiple([1, 2, 3]);
+        const result1 = await pdl.loadMultiple([2, 3, 4]);
         result1.should.deep.equals([2, 3, 4]);
-        loadRequestedKeys.should.deep.equals([[1, 2, 3], [2, 3, 4]]);
+        loadRequestedKeys.should.deep.equals([[1, 2, 3, 4]]);
 
         const result2 = await Promise.all([
             pdl.loadMultiple([100, 101, 102]),
             pdl.loadMultiple([102, 103, 104]),
         ]);
         result2.should.deep.equals([[100, 101, 102], [102, 103, 104]]);
-        loadRequestedKeys.should.deep.equals([[1, 2, 3], [2, 3, 4], [100, 101, 102, 103, 104]]);
+        loadRequestedKeys.should.deep.equals([[1, 2, 3, 4], [100, 101, 102, 103, 104]]);
     });
 
     it("Create simple periodic data loader with caching ability and unique enabled.", async () => {
@@ -288,7 +288,7 @@ describe("Unique keys only to batch load function", () => {
         const result1 = await Promise.all([
             pdl.loadSingle(1),
             pdl.loadSingle(2),
-            pdl.loadSingle(1)
+            pdl.loadSingle(1),
         ]);
         result1.should.deep.equals([1, 2, 1]);
         loadRequestedKeys.should.deep.equals([[1, 2]]);
@@ -331,4 +331,4 @@ describe("Unique keys only to batch load function", () => {
         result2.should.deep.equals([[3, 4, 5], [2, 4, 6], [3, 5, 7]]);
         loadRequestedKeys.should.deep.equals([[1, 2, 3, 4, 5], [6, 7]]);
     });
-})
+});

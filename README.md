@@ -38,6 +38,13 @@ type LoadFunction<TKey, TValue> = (keys: TKey[]) => Promise<Array<TValue | Error
 ### Options  
   
 Periodic data loader takes option object at construction time. Structure is like below.  
+
+**`IPeriodicDataLoaderOption<TKey, TValue>`**  
+- `batchInterval` - `number` - Interval of single period to execute batch load function. Must be zero or positive integer.  
+- `loadFn` - `LoadFunction<TKey, TValue>` - Batch load function to execute every period if there are pending keys.  
+- `cache` - `boolean` - Whether caching should be used.  
+- `cacheMap` - `CacheMap<TKey, TValue>` - Cache map to use for caching. Cache map should be provided when `cache` is set to `true`.  
+- `unique` - `boolean` - Whether to pass unique keys only to batch load function.
   
 ```typescript
 /**
@@ -99,7 +106,7 @@ There are two method for loading data. One is for single data and the other is f
 For single data load, use as follows.  
   
 ```typescript
-const singleData = await pdl.load(123);
+const singleData = await pdl.loadSingle(123);
 ```  
 This will load single data with key `123`.  
   
@@ -108,9 +115,34 @@ This will load single data with key `123`.
 For multiple data loade, use as follows.  
   
 ```typescript
-const multipleData = await pdl.load([456, 789]);
+const multipleData = await pdl.loadMultiple([456, 789]);
 ```  
 This will load multiple data for keys `456` and `789`. `multipleData[0]` will contain data for key `456` and `multipleData[1]` will contain data for key `789`.  
+  
+#### Batching multiple calls.  
+  
+To execute multiple calls(`loadSingle` or `loadMultiple`) to loader in single execution, call them without awaiting each result, or use `Promise.all`. Of course, these two codes are only examples, user can do what user wants.  
+  
+```typescript
+// Creates loader instance.
+const pdl = new PeriodicDataLoader({ batchInterval: 100, loadFn: (keys: number[]) => Promise.resolve(keys) });
+
+// Load three keys.
+pdl.loadSingle(1);
+pdl.loadSingle(2);
+pdl.loadSingle(3);
+
+// Waits for batch interval, since keys will be loaded after batch interval.
+await new Promise((resolve) => setTimeout(resolve, 100));
+```  
+  
+```typescript
+// Creates loader instance.
+const pdl = new PeriodicDataLoader({ batchInterval: 100, loadFn: (keys: number[]) => Promise.resolve(keys) });
+
+// Loads three keys and awaits them all.
+const [r1, r2, r3] = await Promise.all([ pdl.loadSingle(1), pdl.loadSingle(2), pdl.loadSingle(3) ]);
+```
   
 ### Caching  
   
